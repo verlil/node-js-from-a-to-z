@@ -1,29 +1,18 @@
-var db = require('db');
-var User = require('./user');
-require('./person');
-var log = require('./logger')(module);
+var http = require('http');
+var util = require('util');
 
-db.connect();
-// This module is initialized once in an absolute path, 
-// later this module is stored in the cache, so we do not need 
-// to initialize it in each file. After initialization of this 
-// module in one place, all modules that have connected it to 
-// themselves refer to the same part of the cache memory.
+var server = new http.Server(); // EventEmitter
 
+server.listen(1337, '127.0.0.1');
 
-function run() {
-    var vasya = new User('Vasya');
-    var petya = new User('Petya');
-    var sasha = new Person('Sasha');
+var counter = 0;
 
-    vasya.hello(petya);
-    sasha.hello(vasya);
+var emit = server.emit;
+server.emit = function(event) {
+    console.log(event);
+    emit.apply(server, arguments);
 }
 
-
-if (module.parent) {
-    console.log('somebody required me, so I will just export my functions');
-    exports.run = run;
-} else {
-    run();
-}
+server.on('request', function (req, res) {
+    res.end('Hello world! ' + ++counter);
+});
